@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import Lane from '../components/Lane/Lane';
+import withDataFetching from '../withDataFetching';
 
 const BoardWrapper = styled.div`
   display: flex;
@@ -13,53 +14,12 @@ const BoardWrapper = styled.div`
   }
 `;
 
-class Board extends Component {
-  constructor() {
-    super();
-    this.state = {
-      data: [],
-      loading: true,
-      error: ''
-    }
-  }
-
-  async componentDidMount() {
-    try {
-      const tickets = await fetch('../../assets/data.json');
-      const ticketsJSON = await tickets.json();
-      if (ticketsJSON) {
-        this.setState({
-          data: ticketsJSON,
-          loading: false
-        })
-      }
-    } catch(error) {
-      this.setState({
-        data: [],
-        loading: false,
-        error: error.message
-      })
-    }
+const Board = ({ lanes, data, error, loading }) => (
+  <BoardWrapper>
+    {lanes.map(lane => <Lane title={lane.title} key={lane.id} tickets={data.filter(ticket => ticket.lane === lane.id)} loading={loading} error={error}/>)}
+  </BoardWrapper>
+)
 
 
-  }
-  render() {
-    const { data, error, loading } = this.state;
-    const lanes = [
-      { id: 1, title: 'To Do' },
-      { id: 2, title: 'In Progress' },
-      { id: 3, title: 'Review' },
-      { id: 4, title: 'Done' },
-    ];
 
-    return (
-      <BoardWrapper>
-        {lanes.map(lane => (
-          <Lane key={lane.id} title={lane.title} loading={loading} error={error} tickets={data.filter(ticket => ticket.lane === lane.id)}/>
-        ))}
-      </BoardWrapper>
-    );
-  }
-}
-
-export default Board;
+export default withDataFetching(Board);
